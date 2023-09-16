@@ -2,3 +2,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+h2 {
+  color: var(--sl-color-green) !important;
+}
