@@ -1,5 +1,5 @@
 ---
-title: TEST
+title: Shakewell Docs
 description: Get started building your docs site with Starlight.
 template: splash
 hero:
@@ -16,9 +16,13 @@ hero:
       icon: external
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
 
 ## Next steps
+<Tabs>
+	<TabItem label="Stars">Sirius, Vega, Betelgeuse</TabItem>
+	<TabItem label="Moons">Io, Europa, Ganymede</TabItem>
+</Tabs>
 
 <CardGrid stagger>
 	<Card title="Update content" icon="pencil">
