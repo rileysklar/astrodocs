@@ -10,7 +10,7 @@ Writing a good guide requires thinking about what your users are trying to do.
 
 ### jQuery
 
-```
+```html
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
   <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -80,92 +80,90 @@ Writing a good guide requires thinking about what your users are trying to do.
 
 ### CSS
 
-```
-body{
-    background:#e8eaed;
+```css
+body {
+  background: #e8eaed;
 }
-.container{
-    max-width:600px;
-
+.container {
+  max-width: 600px;
 }
-.searchbox{
-    position:relative;
-    min-width:50px;
-    width:0%;
-    height:50px;
-    float:right;
-    overflow:hidden;
-    -webkit-transition: width 0.3s;
-    -moz-transition: width 0.3s;
-    -ms-transition: width 0.3s;
-    -o-transition: width 0.3s;
-    transition: width 0.3s;
+.searchbox {
+  position: relative;
+  min-width: 50px;
+  width: 0%;
+  height: 50px;
+  float: right;
+  overflow: hidden;
+  -webkit-transition: width 0.3s;
+  -moz-transition: width 0.3s;
+  -ms-transition: width 0.3s;
+  -o-transition: width 0.3s;
+  transition: width 0.3s;
 }
-.searchbox-input{
-    top:0;
-    right:0;
-    border:0;
-    outline:0;
-    background:#fff;
-    width:100%;
-    height:50px;
-    margin:0;
-    padding:0px 55px 0px 20px;
-    font-size:20px;
+.searchbox-input {
+  top: 0;
+  right: 0;
+  border: 0;
+  outline: 0;
+  background: #fff;
+  width: 100%;
+  height: 50px;
+  margin: 0;
+  padding: 0px 55px 0px 20px;
+  font-size: 20px;
 }
 .searchbox-input::-webkit-input-placeholder {
-    color: #fff;
+  color: #fff;
 }
 .searchbox-input:-moz-placeholder {
-    color: #fff;
+  color: #fff;
 }
 .searchbox-input::-moz-placeholder {
-    color: #fff;
+  color: #fff;
 }
 .searchbox-input:-ms-input-placeholder {
-    color: #fff;
+  color: #fff;
 }
 .searchbox-icon,
-.searchbox-submit{
-    width:50px;
-    height:50px;
-    display:block;
-    position:absolute;
-    top:0;
-    font-family:verdana;
-    font-size:22px;
-    right:0;
-    padding:0;
-    margin:0;
-    border:0;
-    outline:0;
-    line-height:50px;
-    text-align:center;
-    cursor:pointer;
-    color:#fff;
-    background:#124423;
-    border-radius: 6px;
-
+.searchbox-submit {
+  width: 50px;
+  height: 50px;
+  display: block;
+  position: absolute;
+  top: 0;
+  font-family: verdana;
+  font-size: 22px;
+  right: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline: 0;
+  line-height: 50px;
+  text-align: center;
+  cursor: pointer;
+  color: #fff;
+  background: #124423;
+  border-radius: 6px;
 }
-.searchbox-open{
-    width:100%;
+.searchbox-open {
+  width: 100%;
 }
 
 .searchbox-submit {
-    padding: 0 !important;
-    border-radius: 6px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
 }
 
 input.searchbox-input {
-    border: 0;
-    width: 100%;
-    background-color: #333;
-    border-radius: 6px !important;
-    font-family: 'Averia Serif Libre';
+  border: 0;
+  width: 100%;
+  background-color: #333;
+  border-radius: 6px !important;
+  font-family: "Averia Serif Libre";
 }
 
 .hide-menu-group {
-    display: none;
+  display: none;
 }
 ```
 
@@ -173,24 +171,24 @@ input.searchbox-input {
 
 ### jQuery
 
-```
+```html
 <script>
-    jQuery(document).ready(function($) {
-        // Add click event listener to toggle active class
-        jQuery('.FAQ-NV').click(function() {
-            // Toggle active class for the clicked item
-            jQuery(this).toggleClass('active');
+  jQuery(document).ready(function ($) {
+    // Add click event listener to toggle active class
+    jQuery(".FAQ-NV").click(function () {
+      // Toggle active class for the clicked item
+      jQuery(this).toggleClass("active");
 
-            // Close other FAQ items
-            jQuery('.FAQ-NV').not(this).removeClass('active');
-        });
+      // Close other FAQ items
+      jQuery(".FAQ-NV").not(this).removeClass("active");
     });
+  });
 </script>
 ```
 
 PHP Loop
 
-```
+```php
 
 // Check if the repeater field has rows of data
 if (have_rows('faq', get_the_ID())) : // Use get_the_ID() to get the current post's ID
