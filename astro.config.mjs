@@ -34,16 +34,18 @@ export default defineConfig({
             directory: "reference",
           },
         },
-        {
-          label: "Operations",
-          autogenerate: {
-            directory: "operations",
-          },
-        },
+
         {
           label: "Clients",
           autogenerate: {
             directory: "clients",
+          },
+        },
+
+        {
+          label: "Operations",
+          autogenerate: {
+            directory: "operations",
           },
         },
       ],

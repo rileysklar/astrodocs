@@ -1,0 +1,77 @@
+---
+title: PHP MyAdmin SOP
+description: A guide about how to add users in WordPress using PHP MyAdmin
+---
+
+# **Add WordPress Admin User with phpMyAdmin**
+
+[Link to the article](https://wpengine.com/support/add-admin-user-phpmyadmin/)
+
+**Last updated on April 26th, 2022**
+
+**Tags**: [admin](https://wpengine.com/support-tag/admin), [database](https://wpengine.com/support-tag/database), [login](https://wpengine.com/support-tag/login), [password](https://wpengine.com/support-tag/password), [phpmyadmin](https://wpengine.com/support-tag/phpmyadmin), [user](https://wpengine.com/support-tag/user), [wp-admin](https://wpengine.com/support-tag/wp-admin)
+
+You can create a new WordPress admin user directly from the database. Use this method if you need to add a new user to the site without having to sign in to the WordPress dashboard.
+
+## **Contents** [hide](https://wpengine.com/support/add-admin-user-phpmyadmin/#)
+
+1. [Add WordPress Admin](https://wpengine.com/support/add-admin-user-phpmyadmin/#Add_WordPress_Admin)
+2. [Additional Notes](https://wpengine.com/support/add-admin-user-phpmyadmin/#Additional_Notes)
+
+---
+
+## **Add WordPress Admin**
+
+- Open the [User Portal](https://my.wpengine.com/sites)
+- Select the Environment name to edit
+- Click **phpMyAdmin** at the top
+
+![phpMyAdmin](https://lh5.googleusercontent.com/dzjP7iJkK_fWLCEVIu9QkErSZ04mCBlKa-RUm8e1nxSUBF0AUjHF6lT5le_FousmLeNrUTNRuPqI4Wy7LXg529TEcdjKYge8R5TAMC1AdwWXQyQvfO8ZF3UcEVW9T9gS2_Uxjd2NHV8UuWkyM4g1JAY)
+
+- Select your database (e.g., **wp_environment** - Primary database for this environment)
+- Select the **wp_users** table
+  - If you have a custom [database prefix](https://codex.wordpress.org/Creating_Tables_with_Plugins#Database_Table_Prefix), it will be **yourprefix_users**
+- Click **Insert** at the top
+- Fill out the required new user data
+  - **ID** - Enter any available ID number (remember this number)
+  - **user_login** - The username for this user
+  - **user_pass** - The raw password (set the function dropdown to MD5)
+  - **user_nicename** - The author slug or name
+  - **user_email** - The email address associated with this user
+  - **user_status** - Set this to 0
+  - **display_name** - The display name for the user
+- Click **Go** at the bottom
+- Click **Go** again on the query page (should get a green check mark and success banner)
+
+On the left-hand menu, click **wp_usermeta**
+
+![wp_usermeta](https://lh5.googleusercontent.com/K3Wyb0DRsa8RPjJ0ILmsgiFfZH8r1x1L7k6n1w1ru5MvYYSbyqva3USS3VNuRuhvRRYojsdwUZbDEqoi-DRTWYZsBAEqSP5eBviMBq5fuXnPOFtH1I4EURMel_cod9pj1pkMlc78BI9yhIXSiIFt4WE)
+
+- Click **Insert** at the top
+- Fill out the following required fields for user capabilities:
+  - **user_id** - Same ID from Step 8
+  - **meta_key** - `wp_capabilities`
+  - **meta_value** - `a:1:{s:13:"administrator";b:1;}`
+- Click **Go** at the bottom
+- Click **Go** again on the query page (should get a green check mark and success banner)
+
+You should now be able to access the site with your new admin user. If you have issues, recheck that each step is done exactly as described.
+
+If you have a custom database prefix, ensure you've done each step in the respective custom prefix table name.
+
+---
+
+## **Additional Notes**
+
+If your newly created user is unable to use the visual editor within WordPress after creation, ensure the visual editor is not disabled. This can be set in two ways:
+
+**From the admin dashboard:**
+
+1. Login to the WordPress admin dashboard with your new user
+2. At the top right, click your username
+3. Click **Edit my profile**
+4. Ensure **Disable the visual editor when writing** is not checked
+
+**Or, from the database:**
+
+- Follow the provided steps in the article for the database method.

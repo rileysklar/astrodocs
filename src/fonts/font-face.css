@@ -1,0 +1,10 @@
+/* src/fonts/font-face.css */
+
+@font-face {
+  font-family: "Averia Serif Libre";
+  /* Use a relative path to the local font file in `url()`. */
+  src: url("./AveriaSerifLibre-Bold.ttf") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
