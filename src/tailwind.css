@@ -12,13 +12,11 @@ pre.astro-code.css-variables {
 }
 
 article.card.sl-flex.astro-v5tidmuc {
-  border-radius: 8px;
-
   box-shadow: 0 8px 32px 0 #1f268700;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border-radius: 10px;
-  border: 1px solid rgb(255, 255, 255);
+  /* border: 1px solid rgb(255, 255, 255); */
 }
 
 /* .action:where(.astro-yjy4zhro).primary {
