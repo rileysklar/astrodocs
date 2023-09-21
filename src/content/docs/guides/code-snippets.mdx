@@ -255,4 +255,568 @@ null
 
 - Read [about how-to guides](https://diataxis.fr/how-to-guides/) in the Diátaxis framework
 
-###
+## NHS XML Feed
+
+### PHP
+
+```php
+<?php
+    header('Content-Type: application/xml; charset=' . get_option('blog_charset'));
+    header('Content-Disposition: attachment; filename="nhsfeed.xml"');
+echo '<?xml version="1.0" encoding="UTF-8"?>
+    <Builders xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DateGenerated="'. date('Y-m-d\TH:i:sP', current_time('timestamp')) .'" xsi:noNamespaceSchemaLocation="NHlist-v7_8.xsd">
+        <Corporation>
+            <CorporateBuilderNumber>GFO</CorporateBuilderNumber>
+            <CorporateState>TX</CorporateState>
+            <CorporateName>GFO</CorporateName>
+            <CorporateReportingEmail SendToCorporateOnly="0">NHS_leads@bisquehomes.com</CorporateReportingEmail>
+            ';
+
+            // Get all the Division posts
+            $args = array(
+                'post_type' => 'division',
+                'posts_per_page' => -1
+            );
+
+    $query = new WP_Query($args);
+
+    if ($query->have_posts()) {
+
+        while ($query->have_posts()) {
+            $query->the_post();
+
+            // Start of <Builder> element
+            echo '<Builder>
+                <BuilderNumber>' . get_field('BuilderNumber') . '</BuilderNumber>
+                <BrandName>GFO Home</BrandName>
+                <BrandLogo_Med ReferenceType="URL">https://gfohomedev.wpengine.com/wp-content/uploads/2023/06/23212-Med.jpg</BrandLogo_Med>
+                <BrandLogo_Sm ReferenceType="URL">https://gfohomedev.wpengine.com/wp-content/uploads/2023/06/23212-SML.jpg</BrandLogo_Sm>
+                <ReportingName>GFO Home -' . get_the_title() . '</ReportingName>
+                <DefaultLeadsEmail LeadsPerMessage="All">info@gfohome.com</DefaultLeadsEmail>
+                ';
+                if (!empty(get_field('LeadsEmail'))) {
+                    echo '<CopyLeadsEmail LeadsPerMessage="All">' . get_field('LeadsEmail') . '</CopyLeadsEmail>
+                ';
+                }
+                echo '<BuilderWebsite>http://gfohome.com</BuilderWebsite>
+                ';
+
+                // Get the related Community-Detail posts
+                $related_community_details = get_field('RelatedCommunity');
+
+                if ($related_community_details) {
+                    foreach ($related_community_details as $community_detail) {
+
+                        $outOfCommunity = !empty(get_field('location', $community_detail->ID)) ? 1 : 0;
+                        $BuildOnYourLot = !empty(get_field('zip', $community_detail->ID)) ? 1 : 0;
+                        $subAmenity = !empty(get_field('AmenityType', $community_detail->ID)) ? 1 : 0;
+                        $subdivision = get_field('subdivision', $community_detail->ID);
+                        $community = get_field('community', $community_detail->ID);
+
+                        $fieldValue = !empty(get_field('subdivision', $community_detail->ID)) ?? get_field('community', $community_detail->ID);
+                        $zipCodePattern = '/\b\d{5}(?:-\d{4})?\b/';
+
+                        $phone = get_field('phone', $community_detail->ID);
+                        $numericPhoneNumber = preg_replace('/[^0-9]/', '', $phone);
+
+                        // Extract the area code, prefix, and suffix using regex
+                        $areaCode = substr($numericPhoneNumber, 0, 3);
+                        $prefix = substr($numericPhoneNumber, 3, 3);
+                        $suffix = substr($numericPhoneNumber, 6);
+
+
+                        // Start of <Subdivision> element
+                        echo '<Subdivision Status="' . get_field('MarketingStatus', $community_detail->ID)['value'] . '"  ShareWithRealtors="1" ';
+                        if(!empty( get_field('price', $community_detail->ID)) ){
+                            echo 'PriceLow="' . str_replace(['$', ','], '', get_field('price', $community_detail->ID)) . '" PriceHigh="' . str_replace(['$', ','], '', get_field('price', $community_detail->ID)) . '"';
+                        }
+
+                        echo '><SubdivisionNumber>' . get_field('CommunityNumber', $community_detail->ID) . '</SubdivisionNumber>
+                        <SubdivisionName>' . get_the_title($community_detail->ID) . '</SubdivisionName>
+                        <MarketingChannel>NewHomeSource</MarketingChannel>
+                        <UseDefaultLeadsEmail>1</UseDefaultLeadsEmail>';
+                        if (preg_match($zipCodePattern, $fieldValue, $matches)) {
+                            $zipCode = $matches[0];
+                            echo "<BuildOnYourLot>' . $BuildOnYourLot . '</BuildOnYourLot>";
+                        }
+                        echo '<SalesOffice>
+                            <Agent>' . get_field('sa_1', $community_detail->ID) . '</Agent>
+                            <Address OutOfCommunity="' . $outOfCommunity . '">
+                                <Street1>' . get_field('address', $community_detail->ID) . '</Street1>
+                                <City>' . get_field('city', $community_detail->ID) . '</City>
+                                <State>' . get_field('state', $community_detail->ID) . '</State>
+                                <ZIP>' . get_field('zip', $community_detail->ID) . '</ZIP>
+                                <Geocode>
+                                    <Latitude>' . get_field('latitude', $community_detail->ID) . '</Latitude>
+                                    <Longitude>' . get_field('longitude', $community_detail->ID) . '</Longitude>
+                                </Geocode>
+                            </Address>
+                            ';
+                            if (!empty($areaCode)) {
+                            echo '<Phone>
+                                <AreaCode>'. $areaCode .'</AreaCode>
+                                <Prefix>'. $prefix .'</Prefix>
+                                <Suffix>'. $suffix .'</Suffix>
+                            </Phone>';
+                            }
+                        echo '
+                        </SalesOffice>
+                        ';
+                        if (preg_match($zipCodePattern, $fieldValue, $matches)) {
+                            $zipCode = $matches[0];
+                            echo '<SubAddress>
+                                <SubCity>' . get_field('address', $community_detail->ID) . '</SubCity>
+                                <SubState>' . get_field('state', $community_detail->ID) . '</SubState>
+                                <SubZIP>' . get_field('zip', $community_detail->ID) . '</SubZIP>
+                                <SubGeocode>
+                                    <SubLatitude>' . get_field('latitude', $community_detail->ID) . '</SubLatitude>
+                                    <SubLongitude>' . get_field('longitude', $community_detail->ID) . '</SubLongitude>
+                                </SubGeocode>
+                            </SubAddress>
+                            ';
+                        }
+                        if ($subAmenity) {
+                            echo '<SubAmenity Type="'.get_field('LocolAreaAmenityDescription', $community_detail->ID).'">'.$subAmenity.'</SubAmenity>';
+                        }
+
+                        if (!empty( get_field('images', $community_detail->ID)) ) {
+                            echo '<SubImage SequencePosition="1" Type="SubdivisionBanner">' . get_field('images', $community_detail->ID) . '</SubImage>';
+                        }
+                        if (!empty( get_field('CommunityVideosRepeater', $community_detail->ID)) ){
+                            echo '<SubVideoFile SequencePosition="1">' . get_field('CommunityVideosRepeater', $community_detail->ID) . '</SubVideoFile>';
+                        }
+                        if (!empty( get_field('VideoLocation', $community_detail->ID)) ){
+                            echo '<SubVideoTour SequencePosition="1">' . get_field('VideoLocation', $community_detail->ID) . '</SubVideoTour>';
+                        }
+                        echo '<Promotion>
+                            <PromoHeadline>' . get_field('PromoHeadline', $community_detail->ID) . '</PromoHeadline>
+                            <PromoDescription>' . get_field('PromoDescription', $community_detail->ID) . '</PromoDescription>
+                        </Promotion>';
+
+                        // Get the related Floorplan posts
+                        $related_floorplans = get_field('floorplan_comm_rel', $community_detail->ID);
+
+                        if ($related_floorplans) {
+                            foreach ($related_floorplans as $floorplan) {
+                                // Start of <Plan> element
+                                $price = get_field('price', $floorplan->ID); // Assuming get_field returns the price as a string
+                                $cleanedPrice = str_replace(['$', ','], '', $price);
+                                $formattedPrice = number_format((float)$cleanedPrice, 2, '.', ''); // Remove the thousands separator parameter
+
+                                echo '<Plan Type="SingleFamily">
+                                <PlanNumber>' . get_field('PlanNumber', $floorplan->ID) . '</PlanNumber>
+                                <PlanName>' . get_field('plan_name', $floorplan->ID) . '</PlanName>
+                                <BasePrice>' . $formattedPrice . '</BasePrice>
+                                ';
+                                if ( get_field('minimum_beds_copy', $floorplan->ID) ) {
+                                    $fullBaths = floor( get_field('minimum_beds_copy', $floorplan->ID) );
+                                    $halfBaths = ceil( get_field('minimum_beds_copy', $floorplan->ID) - $fullBaths );
+                                    echo '<Baths>' . $fullBaths . '</Baths>
+                                ';
+                                    if ( $halfBaths ) {
+                                        echo '<HalfBaths>' . $halfBaths . '</HalfBaths>
+                                ';
+                                    }
+                                }
+                                echo '<Bedrooms>' . get_field('maximum_beds', $floorplan->ID) . '</Bedrooms>
+                                <Garage>' . get_field('garages', $floorplan->ID) . '</Garage>
+                                ';
+                                /* echo '<PlanAmenity>' . get_field('plan_amenities_&_living_areas', $floorplan->ID) . '</PlanAmenity>
+                                ';
+                                echo '<PlanOpenAmenity>' . get_field('plan_amenities_&_living_areas', $floorplan->ID) . '</PlanOpenAmenity>
+                                '; */
+                                echo '
+                                <PlanImages>
+                                    <FloorPlanImage SequencePosition="1" ReferenceType="URL">' . get_field('floorplan', $floorplan->ID) . '</FloorPlanImage>
+                                </PlanImages>
+                                <PlanWebsite>' . get_field('interactive_floorplan_link', $floorplan->ID) . '</PlanWebsite>
+                                ';
+
+                                // Get the related QMI posts
+                                $related_qmis = get_field('Plan_RelatedSpec', $floorplan->ID);
+
+                                if ($related_qmis) {
+                                    foreach ($related_qmis as $qmi) {
+                                        // Start of <Spec> element
+                                        // https://gfohomedev.wpengine.com/wp-admin/post.php?post=223&action=edit
+                                        echo '<Spec Type="SingleFamily">
+                                            <SpecNumber>' . get_field('spec_number', $qmi->ID) . '</SpecNumber>
+                                            <SpecAddress>
+                                                <SpecCity>' . get_field('city', $qmi->ID) . '</SpecCity>
+                                                <SpecState>' . get_field('state', $qmi->ID) . '</SpecState>
+                                                <SpecZIP>' . get_field('zip', $qmi->ID) . '</SpecZIP>
+                                                <SpecGeocode>
+                                                    <SpecLatitude>' . get_field('latitude', $qmi->ID) . '</SpecLatitude>
+                                                    <SpecLongitude>' . get_field('longitude', $qmi->ID) . '</SpecLongitude>
+                                                </SpecGeocode>
+                                            </SpecAddress>
+                                            <SpecPrice>' . str_replace(['$', ','], '', get_field('price', $qmi->ID) ) . '</SpecPrice>
+
+                                        ';
+
+                                        // End of <Spec> element
+                                        echo '
+                                        </Spec>
+                                        ';
+                                    }
+
+                                    // Adding <Spec> count
+                                    echo '
+                                    <SpecCount>' . count($related_qmis) . '</SpecCount>
+                                    ';
+                                }
+
+                                // End of <Plan> element
+                                echo '
+                                </Plan>
+                                ';
+                            }
+
+                            // Adding <Plan> count
+                            echo '
+                            <PlanCount>' . count($related_floorplans) . '</PlanCount>
+                            ';
+                        }
+
+                        // End of <Subdivision> element
+                    echo '
+                        </Subdivision>
+                    ';
+                    }
+                }
+
+                // Adding Subdivision count
+                echo '
+                    <SubsCount>' . count($related_community_details) . '</SubsCount>
+                ';
+
+                // End of <Builder> element
+                echo '
+                    </Builder>
+                ';
+            }
+
+            wp_reset_postdata();  // Reset the global $post object
+        }
+
+    echo '</Corporation>
+    </Builders>';
+?>
+```
+
+## Zillow XML Feed
+
+### PHP
+
+```php
+<?php
+    header('Content-Type: application/xml; charset=' . get_option('blog_charset'));
+    header('Content-Disposition: attachment; filename="zncfeed.xml"');
+
+    echo '<?xml version="1.0" encoding="UTF-8"?>
+    <Builders>
+        <Corporation>
+            <CorporateBuilderNumber>GFO</CorporateBuilderNumber>
+            <CorporateState>TX</CorporateState>
+            <CorporateName>GFO</CorporateName>';
+
+            // Get all the Division posts
+            $args = array(
+                'post_type' => 'division',
+                'posts_per_page' => -1
+            );
+            $query = new WP_Query($args);
+
+            if ($query->have_posts()) {
+                while ($query->have_posts()) {
+                    $query->the_post();
+                    $builderNumber = get_field('BuilderNumber');
+                    $reportingName = get_the_title();
+                    $leadsEmail = !empty(get_field('LeadsEmail')) ? get_field('LeadsEmail') : 'info@gfohome.com';
+
+                    echo '<Builder>
+                        <BuilderNumber>' . $builderNumber . '</BuilderNumber>
+                        <BrandName>GFO Home</BrandName>
+                        <ReportingName>GFO Home - ' . $reportingName . '</ReportingName>
+                        <DefaultLeadsEmail>' . $leadsEmail . '</DefaultLeadsEmail>';
+
+                        // Get the related Community-Detail posts
+                        $related_community_details = get_field('RelatedCommunity');
+                        if ($related_community_details) {
+                            foreach ($related_community_details as $community_detail) {
+                                $c_id = $community_detail->ID;
+                                $subdivision = get_field('subdivision', $c_id);
+
+                                $community = get_field('community', $c_id);
+                                $subdivision_number = get_field('CommunityNumber', $c_id);
+                                $subdivision_name = get_the_title($c_id);
+                                $email_sales_center_associate = get_field('email', $c_id);
+                                $use_default_leads_email = !empty($email_sales_center_associate) ? 0 : 1;
+                                echo '<Subdivision>
+                                    <SubdivisionNumber>' . $subdivision_number . '</SubdivisionNumber>
+                                    <SubdivisionName>' . $subdivision_name . '</SubdivisionName>
+                                    <UseDefaultLeadsEmail>' . $use_default_leads_email . '</UseDefaultLeadsEmail>';
+                                    if(!empty($email_sales_center_associate)) echo '<SubLeadsEmail>' . $email_sales_center_associate . '</SubLeadsEmail>';
+
+                                    // 1 out of range : 0 in range
+                                    $outOfCommunity = !empty(get_field('location', $c_id)) ? 1 : 0;
+                                    $sales_office_street = get_field('address', $c_id);
+                                    $sales_office_city = get_field('city', $c_id);
+                                    $sales_office_state = get_field('state', $c_id);
+                                    $sales_office_zip = get_field('zip', $c_id);
+                                    $sales_office_country = 'USA';
+                                    $sales_office_latitude = get_field('latitude', $c_id);
+                                    $sales_office_longitude = get_field('longitude', $c_id);
+
+                                    $BuildOnYourLot = !empty($sales_office_zip) ? 1 : 0;
+                                    $fieldValue = !empty($subdivision) ?? $community;
+                                    $zipCodePattern = '/\b\d{5}(?:-\d{4})?\b/';
+                                    if (preg_match($zipCodePattern, $fieldValue, $matches)) {
+                                        $zipCode = $matches[0];
+                                        echo '<BuildOnYourLot>' . $BuildOnYourLot . '</BuildOnYourLot>';
+                                    }
+
+                                    echo '<SalesOffice>
+                                        <Address OutOfCommunity="' . $outOfCommunity . '">
+                                            <Street1>' . $sales_office_street . '</Street1>
+                                            <City>' . $sales_office_city . '</City>
+                                            <State>' . $sales_office_state . '</State>
+                                            <ZIP>' . $sales_office_zip . '</ZIP>
+                                            <Geocode>
+                                                <Latitude>' . $sales_office_latitude . '</Latitude>
+                                                <Longitude>' . $sales_office_longitude . '</Longitude>
+                                            </Geocode>
+                                        </Address>';
+
+                                        // Extract the area code, prefix, and suffix using regex
+                                        $phone = get_field('phone', $c_id);
+                                        $numericPhoneNumber = preg_replace('/[^0-9]/', '', $phone);
+                                        $areaCode = substr($numericPhoneNumber, 0, 3);
+                                        $prefix = substr($numericPhoneNumber, 3, 3);
+                                        $suffix = substr($numericPhoneNumber, 6);
+                                        if (isset($phone)) {
+                                            echo '<Phone>
+                                                <AreaCode>'. $areaCode .'</AreaCode>
+                                                <Prefix>'. $prefix .'</Prefix>
+                                                <Suffix>'. $suffix .'</Suffix>
+                                            </Phone>';
+                                        }
+                                    echo '</SalesOffice>';
+                                    if ($outOfCommunity == 1) {
+                                        echo '<SubAddress>
+                                            <SubStreet1>' . $sales_office_street . '</SubStreet1>
+                                            <SubCity>' . $sales_office_city . '</SubCity>
+                                            <SubState>' . $sales_office_state . '</SubState>
+                                            <SubZIP>' . $sales_office_zip . '</SubZIP>
+                                            <SubCountry>' . $sales_office_country . '</SubCountry>
+                                            <SubGeocode>
+                                                <SubLatitude>' . $sales_office_latitude . '</SubLatitude>
+                                                <SubLongitude>' . $sales_office_longitude . '</SubLongitude>
+                                            </SubGeocode>
+                                        </SubAddress>';
+                                    }
+
+                                    $driving_directions = get_field('driving_directions', $c_id);
+                                    echo '<DrivingDirections>' . $driving_directions . '</DrivingDirections>';
+
+                                    // Get the related Floorplan posts
+                                    $related_floorplans = get_field('floorplan_comm_rel', $c_id);
+
+                                    if ($related_floorplans) {
+                                        foreach ($related_floorplans as $floorplan) {
+                                            $f_id = $floorplan->ID;
+
+                                            // Start of <Plan> element
+                                            $price = get_field('price', $f_id); // Assuming get_field returns the price as a string
+                                            $cleanedPrice = str_replace(['$', ','], '', $price);
+                                            $formattedPrice = number_format((float)$cleanedPrice, 2, '.', ''); // Remove the thousands separator parameter
+
+                                            $single_family_plan_number = get_field('PlanNumber', $f_id);
+                                            $single_family_plan_name = get_field('plan_name', $f_id);
+                                            $single_family_plan_type_name = 'Single Family';
+                                            $single_family_max_sqft = get_field('Maximum_Sq_Ft', $f_id);
+                                            echo '<Plan Type="SingleFamily">
+                                                <PlanNumber>' . $single_family_plan_number . '</PlanNumber>
+                                                <PlanName>' . $single_family_plan_name . '</PlanName>
+                                                <PlanTypeName>' . $single_family_plan_type_name .  '</PlanTypeName>
+                                                <BasePrice>' . $formattedPrice . '</BasePrice>
+                                                <BaseSqft>' . $single_family_max_sqft . '</BaseSqft>';
+
+                                                $single_family_minimum_baths = get_field('minimum_baths', $f_id);
+                                                if ( $single_family_minimum_baths ) {
+                                                    $fullBaths = floor( $single_family_minimum_baths );
+                                                    $halfBaths = ceil( $single_family_minimum_baths - $fullBaths );
+                                                    echo '<Baths>' . $fullBaths . '</Baths>';
+
+                                                    if ( $halfBaths ) {
+                                                        echo '<HalfBaths>' . $halfBaths . '</HalfBaths>';
+                                                    }
+                                                }
+
+                                                $single_family_max_beds = get_field('maximum_beds', $f_id);
+                                                $single_family_garage = get_field('garages', $f_id);
+                                                echo '<Bedrooms>' . $single_family_max_beds . '</Bedrooms>
+                                                <Garage>' . $single_family_garage . '</Garage>';
+
+                                                $single_family_modelhome_address = get_field('address', $f_id);
+                                                $single_family_modelhome_state = get_field('state', $f_id);
+                                                $single_family_modelhome_zip = get_field('zip', $f_id);
+                                                echo '<ModelHome>
+                                                    <Address>
+                                                        <City>' . $single_family_modelhome_address . '</City>
+                                                        <State>' . $single_family_modelhome_state . '</State>
+                                                        <ZIP>' . $single_family_modelhome_zip . '</ZIP>
+                                                    </Address>
+                                                </ModelHome>';
+
+                                                echo '<PlanImages>';
+                                                    // $count = 0;
+                                                    // $property_image = get_field('main_slider_image_gallery', $f_id);
+                                                    // foreach ($property_image as $img) :
+                                                    //     $count++;
+                                                    //     echo '<ElevationImage SequencePosition="'.$count.'" Caption="' . $img['caption'] . '">' . $img['url'] . '</ElevationImage>';
+                                                    // endforeach;
+                                                    $plan_featured_img_url = get_the_post_thumbnail_url($f_id, 'full');
+                                                    $plan_caption = get_the_title($f_id);
+                                                    echo '<ElevationImage SequencePosition="1" Caption="' . $plan_caption . '">' . $plan_featured_img_url . '</ElevationImage>';
+
+                                                    $fp_count = 0;
+                                                    $floorplan_map_images = get_field('floorplan_map', $f_id);
+                                                    foreach ($floorplan_map_images as $fp_img) :
+                                                        $fp_count++;
+                                                        echo '<FloorPlanImage SequencePosition="' . $fp_count . '" Caption="' . $fp_img['caption'] . '">' . $fp_img['url'] . '</FloorPlanImage>';
+                                                    endforeach;
+                                                    // $ii_count = 0;
+                                                    // $ii_floorplan_map_images = get_field('main_slider_image_gallery', $f_id);
+                                                    // foreach ($ii_floorplan_map_images as $ii_img) :
+                                                    //     $ii_count++;
+                                                    //     echo '<InteriorImage SequencePosition="' . $ii_count . '" Caption="' . $ii_img['caption'] . '">' . $ii_img['url'] . '</InteriorImage>';
+                                                    // endforeach;
+                                                    echo '<InteriorImage SequencePosition="1" Caption="' . $plan_caption . '">' . $plan_featured_img_url . '</InteriorImage>';
+                                                echo '</PlanImages>';
+
+                                                // Get the related QMI posts
+                                                $related_qmis = get_field('Plan_RelatedSpec', $f_id);
+
+                                                if ($related_qmis) {
+                                                    foreach ($related_qmis as $qmi) {
+                                                        $qmi_id = $qmi->ID;
+                                                        $qmi_featured_img_url = get_the_post_thumbnail_url($qmi_id, 'full');
+                                                        echo '<Spec>
+                                                            <SpecNumber>' . get_field('spec_number', $qmi_id) . '</SpecNumber>
+                                                            <SpecAddress>
+                                                                <SpecStreet1>' . get_field('address', $qmi_id) . '</SpecStreet1>
+                                                                <SpecLot>' . $qmi_featured_img_url . '</SpecLot>
+                                                                <SpecCity>' . get_field('city', $qmi_id) . '</SpecCity>
+                                                                <SpecState>' . get_field('state', $qmi_id) . '</SpecState>
+                                                                <SpecZIP>' . get_field('zip', $qmi_id) . '</SpecZIP>';
+                                                                if (!empty(get_field('latitude', $qmi_id)) || !empty(get_field('longitude', $qmi_id))) :
+                                                                    echo '<SpecGeocode>
+                                                                        <SpecLatitude>' . get_field('latitude', $qmi_id) . '</SpecLatitude>
+                                                                        <SpecLongitude>' . get_field('longitude', $qmi_id) . '</SpecLongitude>
+                                                                    </SpecGeocode>';
+                                                                endif;
+                                                            echo '</SpecAddress>';
+
+                                                            // $dateString = get_field('MoveInDay', $qmi_id);
+                                                            // UnderConstruction / MoveInReady / Reserved / Sold
+                                                            // $setDate = strtotime($dateString);
+                                                            // $currentDate = strtotime(date('Y-m-d'));
+                                                            // $spec_status = get_field('SpecStatus', $qmi_id);
+                                                            // if($setDate > $currentDate) $spec_status = 'UnderConstruction';
+                                                            // if($setDate <= $currentDate) $spec_status = 'MoveInReady';
+
+                                                            // $subtitle = get_field('subtitle', $qmi_id);
+                                                            // if($subtitle == 'Sold' || $subtitle == 'Reserved') $spec_status = $subtitle;
+                                                            $spec_status = get_field('SpecStatus', $qmi_id);
+                                                            if( $spec_status == 'UnderConstruction' || $spec_status == 'MoveInReady' || $spec_status == 'Reserved' || $spec_status == 'Sold' ) {
+                                                                // value of $spec_status is valid
+                                                                // no need to change the value of $spec_status
+                                                            } else {
+                                                                // value of $spec_status is invalid or does not exist
+                                                                // use default value 'MoveInReady'
+                                                                $spec_status = 'MoveInReady';
+                                                            }
+                                                            echo '<SpecStatus>' . $spec_status . '</SpecStatus>';
+
+                                                            $dateString = get_field('MoveInDay', $qmi_id);
+                                                            $moveInDay = date('Y-m-d', strtotime($dateString));
+                                                            echo '<SpecMoveInDate>
+                                                                <Day>' . $moveInDay . '</Day>
+                                                            </SpecMoveInDate>';
+
+                                                            $spec_price = get_field('price', $qmi_id);
+                                                            $spec_max_sqft = get_field('Maximum_Sq_Ft', $qmi_id);
+                                                            echo '<SpecPrice>' . str_replace(['$', ','], '', $spec_price ) . '</SpecPrice>
+                                                                <SpecSqft>' . $spec_max_sqft . '</SpecSqft>';
+
+                                                            $spec_minimum_baths = get_field('minimum_baths', $qmi_id);
+                                                            if ( $spec_minimum_baths ) {
+                                                                $fullBath = floor( $spec_minimum_baths );
+                                                                $halfBath = ceil( $spec_minimum_baths - $fullBath );
+                                                                echo '<SpecBaths>' . $fullBath . '</SpecBaths>';
+
+                                                                if ( $halfBath ) {
+                                                                    echo '<SpecHalfBaths>' . $halfBath . '</SpecHalfBaths>';
+                                                                } // end if halfBath
+                                                            } // end if minimum_baths
+
+                                                            $spec_bedrooms = get_field('maximum_beds', $qmi_id);
+                                                            echo '<SpecBedrooms>' . $spec_bedrooms . '</SpecBedrooms>';
+
+                                                            $spec_model_address = get_field('address', $qmi_id);
+                                                            $spec_model_state = get_field('state', $qmi_id);
+                                                            $spec_model_zip = get_field('zip', $qmi_id);
+                                                            echo '<ModelHome>
+                                                                <Address>
+                                                                    <City>' . $spec_model_address . '</City>
+                                                                    <State>' . $spec_model_state . '</State>
+                                                                    <ZIP>' . $spec_model_zip . '</ZIP>
+                                                                </Address>
+                                                            </ModelHome>';
+
+                                                            echo '<SpecImages>';
+                                                                // $qmicount = 0;
+                                                                // $spec_image = get_field('main_slider_image_gallery', $qmi_id);
+                                                                // foreach ($spec_image as $s_img) :
+                                                                //     $qmicount++;
+                                                                //     echo '<SpecElevationImage SequencePosition="'.$qmicount.'" Caption="' . $s_img['caption'] . '">' . $s_img['url'] . '</SpecElevationImage>';
+                                                                // endforeach;
+
+                                                                $specimg_featured_img_url = get_the_post_thumbnail_url($qmi_id, 'full');
+                                                                $specimg_caption = get_the_title($qmi_id);
+                                                                echo '<SpecElevationImage SequencePosition="1" Caption="' . $specimg_caption . '">' . $specimg_featured_img_url . '</SpecElevationImage>';
+
+                                                                $qmicount_floor = 0;
+                                                                $spec_floorplan_map = get_field('floorplan_map', $qmi_id);
+                                                                foreach ($spec_floorplan_map as $sfpm_img) :
+                                                                    $qmicount_floor++;
+                                                                    echo '<SpecFloorPlanImage SequencePosition="'.$qmicount_floor.'" Caption="' . $sfpm_img['caption'] . '">' . $sfpm_img['url'] . '</SpecFloorPlanImage>';
+                                                                endforeach;
+                                                                // $sii_count = 0;
+                                                                // $spec_interior_image = get_field('main_slider_image_gallery', $qmi_id);
+                                                                // foreach ($spec_interior_image as $sii_img) :
+                                                                //     $sii_count++;
+                                                                //     echo '<SpecInteriorImage SequencePosition="'.$sii_count.'" Caption="' . $sii_img['caption'] . '">' . $sii_img['url'] . '</SpecInteriorImage>';
+                                                                // endforeach;
+
+                                                                echo '<SpecInteriorImage SequencePosition="1" Caption="' . $specimg_caption . '">' . $specimg_featured_img_url . '</SpecInteriorImage>';
+
+                                                            echo '</SpecImages>';
+                                                        echo '</Spec>';
+                                                    } // end foreach
+                                                } // end if
+                                            echo '</Plan>';
+                                        } // end foreach
+                                    } // end if
+                                echo '</Subdivision>';
+                            } // end foreach
+                        } // end if
+                    echo '</Builder>';
+                } // end while
+                wp_reset_postdata();  // Reset the global $post object
+            } // end if
+        echo '</Corporation>
+    </Builders>';
+?>
+```
