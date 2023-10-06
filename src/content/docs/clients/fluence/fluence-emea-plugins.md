@@ -9,7 +9,7 @@ description: Plugins to sunset for Fluence EMEA
 - Classic Widgets
 - Code Snippets
 - Custom Post Type UI
-- Disable Gutenberg
+- Disable Gutenbeg
 - Duplicate Page
 - Envato Market
 - Essential Grid
