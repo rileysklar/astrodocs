@@ -30,3 +30,10 @@ article.card.sl-flex.astro-v5tidmuc {
 /* :root {
   --sl-font: "Sono", serif;
 } */
+
+.jordan-card {
+  height: 50px;
+  width: 50px;
+  border-radius: 12px;
+  background-color: #ff6600;
+}
