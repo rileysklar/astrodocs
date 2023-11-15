@@ -32,17 +32,6 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
   RED
 </div>
 
-<iframe
-  style="border: 1px solid rgba(0, 0, 0, 0.1);
-  height:1000px;
-  width: 100%;
-  border-radius:12px;"
-
-src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FxZ6gzGxH2n186xloaFwam7%2FFluence-Web-library%3Ftype%3Ddesign%26node-id%3D0%253A1%26mode%3Ddesign%26t%3DyYeahjwAfOG4yzK1-1"
-allowfullscreen
-
-> </iframe>
-
 # **Add WordPress Admin User with phpMyAdmin**
 
 [Link to the article](https://wpengine.com/support/add-admin-user-phpmyadmin/)
@@ -66,8 +55,6 @@ You can create a new WordPress admin user directly from the database. Use this m
 - Select the Environment name to edit
 - Click **phpMyAdmin** at the top
 
-![phpMyAdmin](https://lh5.googleusercontent.com/dzjP7iJkK_fWLCEVIu9QkErSZ04mCBlKa-RUm8e1nxSUBF0AUjHF6lT5le_FousmLeNrUTNRuPqI4Wy7LXg529TEcdjKYge8R5TAMC1AdwWXQyQvfO8ZF3UcEVW9T9gS2_Uxjd2NHV8UuWkyM4g1JAY)
-
 - Select your database (e.g., **wp_environment** - Primary database for this environment)
 - Select the **wp_users** table
   - If you have a custom [database prefix](https://codex.wordpress.org/Creating_Tables_with_Plugins#Database_Table_Prefix), it will be **yourprefix_users**
@@ -84,8 +71,6 @@ You can create a new WordPress admin user directly from the database. Use this m
 - Click **Go** again on the query page (should get a green check mark and success banner)
 
 On the left-hand menu, click **wp_usermeta**
-
-![wp_usermeta](https://lh5.googleusercontent.com/K3Wyb0DRsa8RPjJ0ILmsgiFfZH8r1x1L7k6n1w1ru5MvYYSbyqva3USS3VNuRuhvRRYojsdwUZbDEqoi-DRTWYZsBAEqSP5eBviMBq5fuXnPOFtH1I4EURMel_cod9pj1pkMlc78BI9yhIXSiIFt4WE)
 
 - Click **Insert** at the top
 - Fill out the following required fields for user capabilities:
